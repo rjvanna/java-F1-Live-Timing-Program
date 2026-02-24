@@ -18,7 +18,6 @@ public class F1_Timing_Program {
                     + "4. Finish race & Export:\n"
                     + "5. Exit");
             int choice = scnr.nextInt();
-
             scnr.nextLine();
 
             switch(choice){
@@ -43,43 +42,78 @@ public class F1_Timing_Program {
                             System.out.println("Edit racers");
                             if (drivername.isEmpty()) {
                                 System.out.println("No racers found.");
-                                break;
+                                break;}
+                            else {
+                                //edit racer once found
+
+
+                                }
+
+
+
+
+
                             }
                         case 3:
                             System.out.println("Remove racer: ");
                             String nameremove =scnr.nextLine();
+                            // remove racer via racer number
+                            if (nameremove .isEmpty()) {
+                                System.out.println("No racers found.");
+                                break;
+                            }
+                            else {
 
 
-
+                            }
 
 
 
 
 
                             break;
-
-
-
-
-
-
-
-
-                        case 3:
-
-
-
-
-
-
+                            case 4:
+                                System.out.println("Going Back: ");
+                                break;
                     }
                     break;
-
                 case 2:
                     System.out.println("----------Lap Time Menu---------- ");
                     System.out.println("1. Record a lap time:\n"
                             + "2. Remove a lap time\n"
                             + "3. Back");
+                    int choice3 = scnr.nextInt();
+                    scnr.nextLine();
+                    switch(choice3){
+                        case 1:
+                            System.out.println("Record a lap time: ");
+                            int laptime = scnr.nextInt();
+                            scnr.nextLine();
+                            //record lap times
+
+
+                            break;
+                        case 2:
+                            System.out.println("Remove a lap time: ");
+                            int removelaptime = scnr.nextInt();
+                            scnr.nextLine();
+                            //remove the lap times via racer number
+
+
+
+
+                            break;
+                        case 3:
+                            System.out.println("Going Back: ");
+                            break;
+
+                    }
+
+
+
+
+
+
                     break;
 
 
