@@ -104,45 +104,62 @@ class Racer {
 
     }
 
-    class Race {
-        private static int getPointsForPlace(int place) {
-            switch (place) {
-                case 1: return 10;
-                case 2: return 8;
-                case 3: return 6;
-                case 4: return 4;
-                case 5: return 2;
-                default: return 0;
+class Race {
+    private static int getPointsForPlace(int place) {
+        switch (place) {
+            case 1:
+                return 25;
+            case 2:
+                return 18;
+            case 3:
+                return 15;
+            case 4:
+                return 12;
+            case 5:
+                return 10;
+            case 6:
+                return 8;
+            case 7:
+                return 6;
+            case 8:
+                return 4;
+            case 9:
+                return 2;
+            case 10:
+                return 1;
+            default:
+                return 0;
             }
         }
 
-        public static void runRace(ArrayList<Racer> racers) {
-            Scanner scanner = new Scanner(System.in);
+    public static void runRace(ArrayList<Racer> racers) {
+        Scanner scanner = new Scanner(System.in);
 
-            if (racers.isEmpty()) {
-                System.out.println("No racers available.");
-                return;
-            }
-
-            System.out.println("\nEnter placements for this race:");
-
-            for (Racer r : racers) {
-                System.out.print("Placement for " + r.name + ": ");
-                int place = scanner.nextInt();
-
-                int points = getPointsForPlace(place);
-                r.addPoints(points);
-            }
-
-            System.out.println("Race completed. Points assigned.");
+        if (racers.isEmpty()) {
+            System.out.println("No racers available.");
+            return;
         }
 
+        System.out.println("\nEnter placements for this race:");
+
+        for (Racer r : racers) {
+            System.out.print("Placement for " + r.name + ": ");
+            int place = scanner.nextInt();
+
+            int points = getPointsForPlace(place);
+            r.addPoints(points);
+        }
+
+        System.out.println("Race completed. Points assigned.");
     }
 
-
-    public class F1ProjectWork {
-        public static void main(String[] args) {
+}
 
 
-        }
-    }}
+public class F1ProjectWork {
+    public static void main(String[] args) {
+
+
+    }
+}
+}
