@@ -1,19 +1,274 @@
 package mypack;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Scanner;
 import java.io.FileWriter;
 import java.io.IOException;
 
-public class F1_Timing_Program {
+public class F1_Timing_Program extends JFrame implements ActionListener {
 
-    static Scanner scnr = new Scanner(System.in);
-    static ArrayList<String> drivername = new ArrayList<String>();
-    static ArrayList<Double> drivertimes = new ArrayList<Double>();
-    static ArrayList<Integer> driverscores = new ArrayList<Integer>();
-    static ArrayList<String> teamNames = new ArrayList<String>();
-    static ArrayList<Integer> teamScores = new ArrayList<Integer>();
+    static ArrayList<String> drivername = new ArrayList<>();
+    static ArrayList<Double> drivertimes = new ArrayList<>();
+    static ArrayList<Integer> driverscores = new ArrayList<>();
+
+    static ArrayList<String> teamNames = new ArrayList<>();
+    static ArrayList<Integer> teamScores = new ArrayList<>();
     static ArrayList<ArrayList<String>> teamMembers = new ArrayList<>();
+
+    private JTextArea outputArea;
+    private JTextField nameField;
+    private JTextField newNameField;
+    private JTextField timeField;
+    private JTextField teamField;
+    private JButton addButton, editButton, removeButton;
+    private JButton lapButton, viewButton, finishButton;
+    private JButton createTeamButton, addToTeamButton, viewTeamsButton;
+
+    public F1_Timing_Program() {
+
+        setTitle("F1 Racing Timing");
+        setSize(700, 550);
+        setLayout(new BorderLayout());
+
+        outputArea = new JTextArea();
+        outputArea.setEditable(false);
+        add(new JScrollPane(outputArea), BorderLayout.CENTER);
+
+        JPanel inputPanel = new JPanel(new GridLayout(4, 2));
+
+        inputPanel.add(new JLabel("Driver Name:"));
+        nameField = new JTextField();
+        inputPanel.add(nameField);
+
+        inputPanel.add(new JLabel("New Name (Edit):"));
+        newNameField = new JTextField();
+        inputPanel.add(newNameField);
+
+        inputPanel.add(new JLabel("Lap Time:"));
+        timeField = new JTextField();
+        inputPanel.add(timeField);
+
+        inputPanel.add(new JLabel("Team Name:"));
+        teamField = new JTextField();
+        inputPanel.add(teamField);
+
+        add(inputPanel, BorderLayout.NORTH);
+
+        JPanel buttonPanel = new JPanel(new GridLayout(3, 3));
+
+        addButton = new JButton("Add Racer");
+        editButton = new JButton("Edit Racer");
+        removeButton = new JButton("Remove Racer");
+
+        lapButton = new JButton("Record Lap");
+        viewButton = new JButton("View Standings");
+        finishButton = new JButton("Finish Race");
+
+        createTeamButton = new JButton("Create Team");
+        addToTeamButton = new JButton("Add Driver to Team");
+        viewTeamsButton = new JButton("View Teams");
+
+        buttonPanel.add(addButton);
+        buttonPanel.add(editButton);
+        buttonPanel.add(removeButton);
+
+        buttonPanel.add(lapButton);
+        buttonPanel.add(viewButton);
+        buttonPanel.add(finishButton);
+
+        buttonPanel.add(createTeamButton);
+        buttonPanel.add(addToTeamButton);
+        buttonPanel.add(viewTeamsButton);
+
+        add(buttonPanel, BorderLayout.SOUTH);
+
+        addButton.addActionListener(this);
+        editButton.addActionListener(this);
+        removeButton.addActionListener(this);
+        lapButton.addActionListener(this);
+        viewButton.addActionListener(this);
+        finishButton.addActionListener(this);
+        createTeamButton.addActionListener(this);
+        addToTeamButton.addActionListener(this);
+        viewTeamsButton.addActionListener(this);
+
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setVisible(true);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+
+        String name = nameField.getText();
+        String newName = newNameField.getText();
+        String timeText = timeField.getText();
+        String teamName = teamField.getText();
+
+        try {
+            if (e.getSource() == addButton) {
+                drivername.add(name);
+                drivertimes.add(0.0);
+                driverscores.add(0);
+                updateDisplay("Added racer: " + name);
+            }
+
+            else if (e.getSource() == editButton) {
+                int idx = drivername.indexOf(name);
+                if (idx != -1) {
+                    drivername.set(idx, newName);
+                    updateDisplay("Racer updated.");
+                } else {
+                    updateDisplay("Racer not found.");
+                }
+            }
+
+            else if (e.getSource() == removeButton) {
+                int idx = drivername.indexOf(name);
+                if (idx != -1) {
+                    drivername.remove(idx);
+                    drivertimes.remove(idx);
+                    driverscores.remove(idx);
+                    updateDisplay("Racer removed.");
+                } else {
+                    updateDisplay("Racer not found.");
+                }
+            }
+
+            else if (e.getSource() == lapButton) {
+                double time = Double.parseDouble(timeText);
+                int idx = drivername.indexOf(name);
+
+                if (idx != -1) {
+                    drivertimes.set(idx, drivertimes.get(idx) + time);
+                    updateDisplay("Lap recorded.");
+                } else {
+                    updateDisplay("Racer not found.");
+                }
+            }
+
+            else if (e.getSource() == viewButton) {
+                updateDisplay("Leaderboard:");
+            }
+
+            else if (e.getSource() == createTeamButton) {
+                teamNames.add(teamName);
+                teamScores.add(0);
+                teamMembers.add(new ArrayList<>());
+                updateDisplay("Team created: " + teamName);
+            }
+
+            else if (e.getSource() == addToTeamButton) {
+                int teamIdx = teamNames.indexOf(teamName);
+
+                if (teamIdx != -1 && drivername.contains(name)) {
+                    teamMembers.get(teamIdx).add(name);
+                    updateDisplay("Driver added to team.");
+                } else {
+                    updateDisplay("Team or driver not found.");
+                }
+            }
+
+            else if (e.getSource() == viewTeamsButton) {
+                displayTeams();
+            }
+
+            else if (e.getSource() == finishButton) {
+                finishRace();
+                updateDisplay("Race finished & exported.");
+            }
+
+        } catch (Exception ex) {
+            updateDisplay("Invalid input.");
+        }
+    }
+
+    private void updateDisplay(String message) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(message).append("\n\n");
+
+        ArrayList<Integer> indices = new ArrayList<>();
+        for (int i = 0; i < drivername.size(); i++) {
+            indices.add(i);
+        }
+
+        indices.sort((a, b) -> Double.compare(drivertimes.get(a), drivertimes.get(b)));
+
+        for (int i = 0; i < indices.size(); i++) {
+            int idx = indices.get(i);
+
+            sb.append((i + 1)).append(". ")
+                    .append(drivername.get(idx))
+                    .append(": ")
+                    .append(drivertimes.get(idx))
+                    .append(" Total Points: ")
+                    .append(driverscores.get(idx))
+                    .append("\n");
+        }
+
+        outputArea.setText(sb.toString());
+    }
+
+    private void displayTeams() {
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < teamNames.size(); i++) {
+            sb.append("Team: ").append(teamNames.get(i)).append("\n");
+            sb.append("Score: ").append(teamScores.get(i)).append("\n");
+
+            for (String member : teamMembers.get(i)) {
+                int idx = drivername.indexOf(member);
+                double time = (idx != -1) ? drivertimes.get(idx) : 0;
+
+                sb.append(" - ").append(member)
+                        .append(" (Time: ").append(time).append(")\n");
+            }
+
+            sb.append("\n");
+        }
+
+        outputArea.setText(sb.toString());
+    }
+
+    private void finishRace() {
+
+        ArrayList<Integer> indices = new ArrayList<>();
+        for (int i = 0; i < drivername.size(); i++) {
+            indices.add(i);
+        }
+
+        indices.sort((a, b) -> Double.compare(drivertimes.get(a), drivertimes.get(b)));
+
+        for (int i = 0; i < indices.size(); i++) {
+            int place = i + 1;
+            int points = getPoints(place);
+            int idx = indices.get(i);
+            driverscores.set(idx, driverscores.get(idx) + points);
+        }
+
+        for (int i = 0; i < teamNames.size(); i++) {
+            int total = 0;
+            for (String member : teamMembers.get(i)) {
+                int idx = drivername.indexOf(member);
+                if (idx != -1) {
+                    total += driverscores.get(idx);
+                }
+            }
+            teamScores.set(i, total);
+        }
+
+        try {
+            FileWriter writer = new FileWriter("RaceResults.txt");
+            for (int i = 0; i < drivername.size(); i++) {
+                writer.write(drivername.get(i) + " - " + drivertimes.get(i) + "\n");
+            }
+            writer.close();
+        } catch (IOException e) {
+            outputArea.setText("Error saving file.");
+        }
+    }
 
     public static int getPoints(int place) {
         return switch (place) {
@@ -32,276 +287,6 @@ public class F1_Timing_Program {
     }
 
     public static void main(String[] args) {
-
-        while (true) {
-            System.out.println("--------------F1 Timing Menu-------------");
-            System.out.println("1. Racer Menu (new racer, edit racer, remove racer):\n"
-                    + "2. Team Menu:\n"
-                    + "2. Lap Time Menu(record lap, remove lap):\n"
-                    + "3. View current standings:\n"
-                    + "4. Finish race & Export:\n"
-                    + "5. Exit");
-            int choice = scnr.nextInt();
-            scnr.nextLine();
-
-            switch(choice){
-                case 1:
-                    System.out.println("----------Racer Menu---------");
-                    System.out.println("1. New racer\n"
-                            + "2. Edit racer\n"
-                            + "3. Remove racer\n"
-                            + "4. Back");
-                    int choice2 = scnr.nextInt();
-                    scnr.nextLine();
-
-                    switch(choice2) {
-                        case 1:
-                            System.out.println("Adding new racer. Enter racers name:");
-                            String name=scnr.nextLine();
-                            drivername.add(name);
-                            drivertimes.add(0.0);
-                            driverscores.add(0);
-
-                            System.out.println(name +" has been added to the database.");
-                            break;
-
-                        case 2:
-                            System.out.println("Edit racers");
-                            if (drivername.isEmpty()) {
-                                System.out.println("No racers found.");
-                                break;
-                            } else {
-                                System.out.println("Enter the name of the racer to edit:");
-                                String oldName = scnr.nextLine();
-                                int index = drivername.indexOf(oldName);
-
-                                if (index != -1) {
-                                    System.out.println("Enter the new name:");
-                                    String newName = scnr.nextLine();
-                                    drivername.set(index, newName);
-                                    System.out.println("Racer name updated.");
-                                } else {
-                                    System.out.println("Racer not found.");
-                                }
-                            }
-                            break;
-
-                        case 3:
-                            System.out.println("Remove racer: ");
-                            String nameremove = scnr.nextLine();
-
-                            if (nameremove.isEmpty()) {
-                                System.out.println("No racers found.");
-                                break;
-                            } else {
-                                int index2 = drivername.indexOf(nameremove);
-
-                                if (index2 != -1) {
-                                    drivername.remove(index2);
-                                    drivertimes.remove(index2);
-                                    driverscores.remove(index2);
-                                    System.out.println("Racer removed.");
-                                } else {
-                                    System.out.println("Racer not found.");
-                                }
-                            }
-                            break;
-
-                        case 4:
-                            System.out.println("Going Back: ");
-                            break;
-                    }
-                    break;
-
-                case 2:
-                    System.out.println("----------Team Menu----------");
-                    System.out.println("1. Create Team\n"
-                            + "2. Add Racer to Team\n"
-                            + "3. Add Team Points\n"
-                            + "4. View Teams\n"
-                            + "5. Back");
-
-                    int teamChoice = scnr.nextInt();
-                    scnr.nextLine();
-
-                    switch(teamChoice) {
-
-                        case 1:
-                            System.out.println("Enter team name:");
-                            String tName = scnr.nextLine();
-
-                            teamNames.add(tName);
-                            teamScores.add(0);
-                            teamMembers.add(new ArrayList<>());
-
-                            System.out.println("Team created.");
-                            break;
-
-                        case 2:
-                            System.out.println("Enter team name:");
-                            String teamToAdd = scnr.nextLine();
-
-                            int teamIndex = teamNames.indexOf(teamToAdd);
-
-                            if (teamIndex != -1) {
-                                System.out.println("Enter racer name:");
-                                String racer = scnr.nextLine();
-
-                                if (drivername.contains(racer)) {
-                                    teamMembers.get(teamIndex).add(racer);
-                                    System.out.println("Racer added to team.");
-                                } else {
-                                    System.out.println("Racer not found.");
-                                }
-                            } else {
-                                System.out.println("Team not found.");
-                            }
-                            break;
-
-                        case 3:
-                            System.out.println("Enter team name:");
-                            String teamToScore = scnr.nextLine();
-
-                            int teamIndex2 = teamNames.indexOf(teamToScore);
-
-                            if (teamIndex2 != -1) {
-                                System.out.println("Enter points to add:");
-                                int points = scnr.nextInt();
-                                scnr.nextLine();
-
-                                teamScores.set(teamIndex2, teamScores.get(teamIndex2) + points);
-                                System.out.println("Points added.");
-                            } else {
-                                System.out.println("Team not found.");
-                            }
-                            break;
-
-                        case 4:
-                            if (teamNames.isEmpty()) {
-                                System.out.println("No teams created.");
-                            } else {
-                                for (int i = 0; i < teamNames.size(); i++) {
-                                    System.out.println("\nTeam: " + teamNames.get(i));
-                                    System.out.println("Total Score: " + teamScores.get(i));
-                                    System.out.println("Members:");
-
-                                    for (String member : teamMembers.get(i)) {
-                                        int idx = drivername.indexOf(member);
-                                        double time = (idx != -1) ? drivertimes.get(idx) : 0;
-
-                                        System.out.println(" - " + member + " (Time: " + time + ")");
-                                    }
-                                }
-                            }
-                            break;
-
-                        case 5:
-                            System.out.println("Going Back...");
-                            break;
-                    }
-                    break;
-
-                case 3:
-                    System.out.println("----------Lap Time Menu---------- ");
-                    System.out.println("1. Record a lap time:\n"
-                            + "2. Remove a lap time\n"
-                            + "3. Back");
-                    int choice3 = scnr.nextInt();
-                    scnr.nextLine();
-
-                    switch(choice3){
-                        case 1:
-                            System.out.println("Record a lap time: ");
-                            int laptime = scnr.nextInt();
-                            scnr.nextLine();
-
-                            System.out.println("Enter the name of the racer:");
-                            String racerName = scnr.nextLine();
-                            int racerIndex = drivername.indexOf(racerName);
-
-                            if (racerIndex != -1) {
-                                double currentTime = drivertimes.get(racerIndex);
-                                drivertimes.set(racerIndex, currentTime + laptime);
-                                System.out.println("Lap time recorded.");
-                            } else {
-                                System.out.println("Racer not found.");
-                            }
-                            break;
-
-                        case 2:
-                            System.out.println("Remove a lap time: ");
-                            int removelaptime = scnr.nextInt();
-                            scnr.nextLine();
-
-                            System.out.println("Enter the name of the racer:");
-                            String racerName2 = scnr.nextLine();
-                            int racerIndex2 = drivername.indexOf(racerName2);
-
-                            if (racerIndex2 != -1) {
-                                double currentTime2 = drivertimes.get(racerIndex2);
-                                drivertimes.set(racerIndex2, currentTime2 - removelaptime);
-                                System.out.println("Lap time removed.");
-                            } else {
-                                System.out.println("Racer not found.");
-                            }
-                            break;
-
-                        case 3:
-                            System.out.println("Going Back: ");
-                            break;
-                    }
-                    break;
-
-                case 4:
-                    System.out.println("Viewing current standings:");
-                    if (drivername.isEmpty()) {
-                        System.out.println("No racers in database.");
-                    } else {
-                        for (int i = 0; i < drivername.size(); i++) {
-                            System.out.println((i + 1)+ ". " + drivername.get(i) + " - Total Time: " + drivertimes.get(i));
-                        }
-                    }
-                    break;
-
-                case 5:
-                    System.out.println("Finishing race and exporting to file: ");
-
-                    ArrayList<Integer> indices = new ArrayList<>();
-                    for (int i = 0; i < drivername.size(); i++) {
-                        indices.add(i);
-                    }
-
-                    indices.sort((a, b) -> Double.compare(drivertimes.get(a), drivertimes.get(b)));
-                    for (int i = 0; i < indices.size(); i++) {
-                        int driverIndex = indices.get(i);
-                        int place = i + 1;
-                        int points = getPoints(place);
-                        driverscores.set(driverIndex, driverscores.get(driverIndex) + points);
-                    }
-                    for (int i = 0; i < teamNames.size(); i++) {
-                        for (String member : teamMembers.get(i)) {
-                            int driverIndex = drivername.indexOf(member);
-                            if (driverIndex != -1) {
-                                teamScores.set(i, teamScores.get(i) + driverscores.get(driverIndex));
-                            }
-                        }
-                    }
-                    try {
-                        FileWriter writer = new FileWriter("RaceResults.txt");
-                        for (int i = 0; i < drivername.size(); i++) {
-                            writer.write(drivername.get(i) + " - " + drivertimes.get(i) + "\n");
-                        }
-                        writer.close();
-                        System.out.println("Results successfully exported to RaceResults.txt");
-                    } catch (IOException e) {
-                        System.out.println("An error occurred while saving the file.");
-                    }
-                    break;
-
-                case 6:
-                    System.out.println("Exiting program");
-                    return;
-            }
-        }
+        new F1_Timing_Program();
     }
 }
